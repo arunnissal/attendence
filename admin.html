@@ -1,0 +1,80 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Admin Dashboard</h1>
+    <button onclick="logout()">Logout</button>
+    <button onclick="downloadCSV()">Download CSV</button>
+
+    <h2>QR Code (Valid for 5 Minutes)</h2>
+    <div id="qr"></div>
+    <div id="timer">Expires in <span id="countdown">300</span> seconds</div>
+    <div id="expired" style="display: none; color: red; font-weight: bold;">QR Code Expired</div>
+
+    <h2>Attendance Log</h2>
+    <ul id="log"></ul>
+  </div>
+
+  <script>
+    const userRole = localStorage.getItem("userRole");
+    if (userRole !== "admin") {
+      window.location.href = "login.html";
+    }
+
+    function logout() {
+      localStorage.removeItem("userRole");
+      window.location.href = 'login.html';
+    }
+
+    function loadAttendance() {
+      const logs = JSON.parse(localStorage.getItem("attendance")) || [];
+      const logList = document.getElementById("log");
+      logs.forEach(entry => {
+        const li = document.createElement("li");
+        li.textContent = `ID: ${entry.id} — ${entry.time}`;
+        logList.appendChild(li);
+      });
+    }
+
+    function downloadCSV() {
+      const logs = JSON.parse(localStorage.getItem("attendance")) || [];
+      let csvContent = "data:text/csv;charset=utf-8,ID,Time\n";
+      logs.forEach(e => {
+        csvContent += `${e.id},${e.time}\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "attendance.csv");
+      document.body.appendChild(link);
+      link.click();
+    }
+
+    const qrText = `QR-${Date.now()}`;
+    QRCode.toCanvas(document.createElement("canvas"), qrText, { width: 200 }, function (error, canvas) {
+      if (error) console.error(error);
+      document.getElementById("qr").appendChild(canvas);
+    });
+
+    let secondsLeft = 300;
+    const countdown = document.getElementById("countdown");
+    const timer = setInterval(() => {
+      secondsLeft--;
+      countdown.textContent = secondsLeft;
+      if (secondsLeft <= 0) {
+        clearInterval(timer);
+        document.getElementById("qr").innerHTML = "";
+        document.getElementById("expired").style.display = "block";
+        document.getElementById("timer").style.display = "none";
+      }
+    }, 1000);
+
+    loadAttendance();
+  </script>
+</body>
+</html>

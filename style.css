@@ -1,0 +1,31 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #f7f7f7;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+  }
+  
+  .container {
+    max-width: 600px;
+    margin: 50px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+  }
+  
+  #reader {
+    width: 100%;
+    margin: 20px auto;
+  }
+  
+  #log {
+    list-style: none;
+    padding: 0;
+  }
+  
+  #log li {
+    padding: 8px;
+    border-bottom: 1px solid #ccc;
+  }
+  
