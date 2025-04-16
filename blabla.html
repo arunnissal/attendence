@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Attendance</title>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+    body {
+      background-color: #f4f6f8;
+      color: #333;
+      padding: 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+    }
+    h1, h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+    #reader {
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto 30px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: center;
+    }
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    #downloadBtn {
+      display: block;
+      margin: 0 auto;
+      padding: 12px 24px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    #downloadBtn:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Student QR Attendance</h1>
+
+    <div id="reader"></div>
+
+    <h2>Attendance Records</h2>
+    <table id="attendanceTable">
+      <thead>
+        <tr>
+          <th>Student ID</th>
+          <th>Timestamp</th>
+        </tr>
+      </thead>
+      <tbody id="attendanceBody"></tbody>
+    </table>
+
+    <button id="downloadBtn">Download CSV</button>
+  </div>
+
+  <script>
+    const records = [];
+
+    function addAttendance(studentId) {
+      const timestamp = new Date().toLocaleString();
+      records.push({ studentId, timestamp });
+
+      const tableBody = document.getElementById("attendanceBody");
+      const row = document.createElement("tr");
+      row.innerHTML = `<td>${studentId}</td><td>${timestamp}</td>`;
+      tableBody.appendChild(row);
+    }
+
+    function onScanSuccess(decodedText, decodedResult) {
+      if (!records.some(r => r.studentId === decodedText)) {
+        addAttendance(decodedText);
+      } else {
+        alert("Attendance already marked for: " + decodedText);
+      }
+    }
+
+    new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 })
+      .render(onScanSuccess);
+
+    document.getElementById("downloadBtn").addEventListener("click", () => {
+      let csvContent = "data:text/csv;charset=utf-8,Student ID,Timestamp\n" +
+        records.map(e => `${e.studentId},${e.timestamp}`).join("\n");
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "attendance.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+  </script>
+</body>
+</html>
